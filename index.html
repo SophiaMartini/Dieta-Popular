@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dieta Popular</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="assets/logo-sem-nome.png">
+  <script src="script.js" defer></script>
+  <!--frufruzes de pdf, excel e dos graficos do charts-->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+<div id="app">
+
+  <div id="login-screen" class="screen">
+    <div class="form-container">
+      <img src="assets/logo-nome -embaixo.png" alt="">
+      <p>Acesso ao sistema de avaliação nutricional.</p>
+      <form id="login-form">
+        <div class="input-group">
+            <label for="login-email">Email:</label>
+            <input type="email" id="login-email" autocomplete="off" required>
+        </div>
+
+        <div class="input-group">
+            <label for="login-password">Senha:</label>
+            <input type="password" id="login-password" autocomplete="new-password" required>
+        </div>
+        <button type="submit" id="login-btn" class="btn-primary">Entrar</button>
+        <p class="form-link">Não tem uma conta? <a href="#" id="show-register">Cadastre-se</a></p>
+        <p id="login-error" class="error-message"></p>
+      </form>
+    </div>
+        <img class="img-login" src="assets/mulher-comendo.png" alt="">
+
+  </div>
+
+  <div id="register-screen" class="screen hidden">
+    <h1>Cadastro de Usuário</h1>
+    <img src="assets/home-malhado.png" alt="">
+    <div class="form-container">
+      <form id="register-form">
+        <div class="input-group">
+            <label for="register-name">Nome Completo:</label>
+            <input type="text" id="register-name" required>
+        </div>
+
+        <div class="input-group">
+            <label for="register-email">Email:</label>
+            <input type="email" id="register-email" autocomplete="off" required>
+        </div>
+
+        <div class="input-group">
+            <label for="register-birthdate">Data de Nascimento:</label>
+            <input type="date" id="register-birthdate" required>
+        </div>
+
+        <div class="input-group">
+            <label for="register-address">Endereço Completo:</label>
+            <input type="text" id="register-address" placeholder="Rua, Número, Bairro, Cidade - Estado" required>
+        </div>
+
+        <div class="input-group">
+            <label for="register-password">Senha:</label><input type="password" id="register-password" autocomplete="new-password" required minlength="8">
+        </div>
+
+        <div class="termos">
+            <label for="lgpd-consent"><input type="checkbox" id="lgpd-consent" required> Eu aceito os <a href="#">Termos e a Política de Privacidade</a>.</label>
+        </div>
+
+        <button type="submit" class="btn-primary">Cadastrar</button>
+        <p class="form-link">Já tem uma conta? <a href="#" id="show-login">Faça Login</a></p>
+        <p id="register-error" class="error-message"></p>
+      </form>
+    </div>
+  </div>
+
+  <div id="main-panel" class="screen hidden">
+    <header>
+      <img src="assets/logo-nome-lado.png" alt="">
+      <nav>
+        <span id="welcome-message"></span>
+        <button id="logout-btn" class="btn-secondary">Sair</button>
+      </nav>
+    </header>
+     <h1 id="panel-title"></h1>
+    <main id="panel-content"></main>
+  </div>
+
+  <div id="assessment-screen" class="screen hidden">
+    <header>
+        <h1>Formulário de Avaliação</h1>
+        <button class="btn-secondary back-to-home-btn">Cancelar</button>
+    </header>
+
+    <main>
+      <form id="assessment-form">
+        <fieldset>
+            <legend>Dados Pessoais</legend>
+                <div class="input-group">
+                    <label for="assess-name">Nome completo (se diferente do cadastro)</label>
+                    <input type="text" id="assess-name" placeholder="Opcional">
+                </div>
+
+                <div class="input-group">
+                    <label for="gender">Sexo Biológico:</label>
+                    <select id="gender" required>
+                        <option value="">Selecione</option>
+                        <option value="Feminino">Feminino</option>
+                        <option value="Masculino">Masculino</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="weight">Peso (kg):</label>
+                    <input type="number" id="weight" step="0.1" required placeholder="00.0">
+                </div>
+
+                <div class="input-group">
+                    <label for="height">Altura (m):</label>
+                    <input type="number" id="height" step="0.01" required placeholder="0.00">
+                </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Circunferências Corporais (Opcional)</legend>
+                <div class="input-group">
+                    <label for="waist_circ">Cintura (cm):</label>
+                    <input type="number" id="waist_circ" step="0.1">
+                </div>
+
+                <div class="input-group">
+                    <label for="hip_circ">Quadril (cm):</label>
+                    <input type="number" id="hip_circ" step="0.1">
+                </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Hábitos e Estilo de Vida</legend>
+                <div class="input-group">
+                    <label for="sleep_hours">Horas de sono:</label>
+                    <select id="sleep_hours" required>
+                        <option value="">Selecione</option>
+                        <option value="Menos de 5h">Menos de 5h</option>
+                        <option value="5 a 6h">5 a 6h</option>
+                        <option value="7 a 8h">7 a 8h</option>
+                        <option value="Mais de 8h">Mais de 8h</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="sleep_quality">Qualidade do sono:</label>
+                        <select id="sleep_quality" required>
+                            <option value="">Selecione</option>
+                            <option value="Ruim (acordo cansado)">Ruim (acordo cansado)</option>
+                            <option value="Regular">Regular</option>
+                            <option value="Boa (revigorante)">Boa (revigorante)</option>
+                        </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="stress_level">Nível de estresse diário:</label>
+                        <select id="stress_level" required>
+                            <option value="">Selecione</option>
+                            <option value="Baixo">Baixo</option>
+                            <option value="Moderado">Moderado</option>
+                            <option value="Alto e constante">Alto e constante</option>
+                        </select>
+                </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Atividade Física</legend>
+                <div class="input-group">
+                    <label for="physical_activity_freq">Frequência:</label>
+                        <select id="physical_activity_freq" required>
+                            <option value="">Selecione</option>
+                            <option value="Sedentário">Sedentário</option>
+                            <option value="1 a 2 vezes/semana">1 a 2 vezes/semana</option>
+                            <option value="3 a 4 vezes/semana">3 a 4 vezes/semana</option>
+                            <option value="5 ou mais vezes/semana">5 ou mais vezes/semana</option>
+                        </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="physical_activity_type">Tipo e intensidade:</label>
+                        <select id="physical_activity_type" required>
+                            <option value="">Selecione</option>
+                            <option value="Nenhuma">Nenhuma</option>
+                            <option value="Leve (caminhada, yoga)">Leve</option>
+                            <option value="Moderada (musculação, corrida leve)">Moderada</option>
+                            <option value="Intensa (Crossfit, HIIT)">Intensa</option>
+                        </select>
+                    </div>
+
+        </fieldset>
+
+        <fieldset>
+            <legend>Hábitos Alimentares</legend>
+                <div class="input-group">
+                    <label for="meals_per_day">Refeições/dia:</label>
+                        <select id="meals_per_day" required>
+                            <option value="">Selecione</option>
+                            <option value="1 a 2">1 a 2</option>
+                            <option value="3 (principais)">3</option>
+                            <option value="4 ou mais (com lanches)">4 ou mais</option>
+                        </select>
+                </div>
+                
+                <div class="input-group">
+                    <label for="eating_behavior">Como come:</label>
+                        <select id="eating_behavior" required>
+                            <option value="">Selecione</option>
+                            <option value="Com calma, prestando atenção">Com calma</option>
+                            <option value="Rápido, sem mastigar direito">Rápido</option>
+                            <option value="Em frente a telas (TV, celular)">Em frente a telas</option>
+                        </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="cravings">Compulsões / ânsias:</label>
+                        <input type="text" id="cravings" placeholder="Ex: Doces à noite. Caso contrário, responda 'Não'">
+                </div>
+
+                <div class="input-group">
+                    <label for="water_intake">Água/dia:</label>
+                        <select id="water_intake" required>
+                            <option value="">Selecione</option>
+                            <option value="Menos de 4 copos">Menos de 4 copos</option>
+                            <option value="4 a 7 copos (1-1.5L)">4 a 7</option>
+                            <option value="8 ou mais copos (2L+)">8 ou mais</option>
+                        </select>
+                </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Frequência de Consumo</legend>
+                <div class="input-group">
+                    <label for="fruits_vegetables">Frutas/Legumes:</label>
+                        <select id="fruits_vegetables" required>
+                            <option value="">Selecione</option>
+                            <option value="Nunca ou raramente">Nunca</option>
+                            <option value="1 a 3 vezes/semana">1 a 3x</option>
+                            <option value="Diariamente, em pouca quantidade">Diariamente (pouca)</option>
+                            <option value="Diariamente, em boa quantidade">Diariamente (boa)</option>
+                        </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="processed_food">Processados:</label>
+                        <select id="processed_food" required>
+                            <option value="">Selecione</option>
+                            <option value="Diariamente">Diariamente</option>
+                            <option value="3 a 5 vezes/semana">3-5x/semana</option>
+                            <option value="1 a 2 vezes/semana">1-2x/semana</option>
+                            <option value="Raramente ou nunca">Raramente</option>
+                        </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="sweets">Doces:</label>
+                        <select id="sweets" required>
+                            <option value="">Selecione</option>
+                            <option value="Diariamente">Diariamente</option>
+                            <option value="3 a 5 vezes/semana">3-5x</option>
+                            <option value="1 a 2 vezes/semana">1-2x</option>
+                            <option value="Raramente ou nunca">Raramente</option>
+                        </select>
+                    </div>
+        </fieldset>
+
+        <fieldset>
+                <legend>Saúde</legend>
+                <h3>Sintomas Frequentes:</h3><br>
+                <div class="checkbox-grid">
+                    <div class="">
+                        <label><input type="checkbox" name="symptoms" value="Inchaço/Gases"> Inchaço/Gases</label>
+                    </div> 
+
+                    <div class="">
+                        <label><input type="checkbox" name="symptoms" value="Azia/Refluxo"> Azia/Refluxo</label>
+                    </div>
+                    <div class="">
+                        <label><input type="checkbox" name="symptoms" value="Cansaço excessivo"> Cansaço excessivo</label>
+                    </div>
+                    <div class="">
+                        <label><input type="checkbox" name="symptoms" value="Dor de cabeça"> Dor de cabeça</label>
+                    </div>
+                    <div class="">
+                        <label><input type="checkbox" name="symptoms" value="Intestino irregular"> Intestino irregular</label>
+                    </div>
+                    <div class="">
+                        <label><input type="checkbox" name="symptoms" value="Nenhum"> Nenhum </label>
+                    </div>
+                </div> 
+
+        <div class="">
+            <h3>Doenças Diagnosticadas:</h3><br>
+            <div class="checkbox-grid">
+                <div class="">
+                    <label><input type="checkbox" name="diseases" value="Diabetes"> Diabetes</label>
+
+                </div>
+                <div class="">
+                    <label><input type="checkbox" name="diseases" value="Hipertensão"> Hipertensão</label>
+
+                </div>
+                <div class="">
+                    <label><input type="checkbox" name="diseases" value="Colesterol alto"> Colesterol alto</label>
+
+                </div>
+                <div class="">
+                    <label><input type="checkbox" name="diseases" value="Hipotireoidismo"> Hipotireoidismo</label>
+
+                </div>
+                <div class="">
+                    <label><input type="checkbox" name="diseases" value="Nenhuma"> Nenhuma</label>
+
+                </div>
+            </div>
+        </div>
+
+          <div class="input-group"><label>Histórico Familiar:</label><input type="text" id="family_history" placeholder="Ex: Mãe com diabetes. Caso contrario responda 'Não'." required></div>
+          <div class="input-group"><label>Medicamentos:</label><input type="text" id="medications" placeholder="Se sim, quais? Caso contrario responda 'Não'." required></div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Preferências Alimentares (importante)</legend>
+            <div class="checkbox-grid">
+                <div class=""><label><input type="checkbox" name="diet_pref" value="Sem preferência"> Sem preferência</label></div>
+                <div class=""><label><input type="checkbox" name="diet_pref" value="Vegetariano"> Vegetariano</label></div>
+                <div class=""><label><input type="checkbox" name="diet_pref" value="Vegano"> Vegano</label></div>
+                <div class=""><label><input type="checkbox" name="diet_pref" value="Zero Lactose"> Zero Lactose</label></div>
+                <div class=""><label><input type="checkbox" name="diet_pref" value="Sem Glúten"> Sem Glúten</label></div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Realidade Socioeconômica e Objetivos</legend>
+                <div class="input-group">
+                    <label for="income">Renda familiar mensal per capita:</label>
+                    <select id="income" required>
+                        <option value="">Selecione</option>
+                        <option value="Até 1 salário mínimo">Até 1 SM</option>
+                        <option value="Entre 1 e 3 salários mínimos">1-3 SM</option>
+                        <option value="Acima de 3 salários mínimos">>3 SM</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="goal">Seu principal objetivo:</label>
+                    <select id="goal" required >
+                        <option value="">Selecione</option>
+                        <option value="Perda de peso">Perda de peso</option>
+                        <option value="Ganho de massa muscular">Ganho de massa</option>
+                        <option value="Melhorar saúde e bem-estar">Melhorar saúde</option>
+                        <option value="Performance esportiva">Performance esportiva</option>
+                    </select>
+                </div>
+
+        </fieldset>
+
+        <button type="submit" id="assessment-submit-btn" class="btn-primary">Enviar Avaliação</button>
+        <p id="assessment-error" class="error-message"></p>
+      </form>
+    </main>
+  </div>
+
+  <div id="results-screen" class="screen hidden">
+    <header><h1>Seu Relatório Nutricional</h1><button class="btn-secondary back-to-home-btn">Voltar ao Painel</button></header>
+    <main id="results-content" class="results-container"></main>
+  </div>
+
+  <div id="client-report-screen" class="screen hidden">
+    <header>
+      <h1>Relatório do Cliente</h1>
+      <div style="display:flex; gap:10px;">
+        <button id="client-report-back" class="btn-secondary">Voltar</button>
+      </div>
+    </header>
+    <main style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;">
+      <section id="client-summary" style="flex:1;min-width:280px;"></section>
+      <section id="client-assessments-list" style="flex:1;min-width:280px;"></section>
+      <section id="client-assessment-detail" style="flex:2;min-width:320px;"></section>
+    </main>
+  </div>
+
+  <div id="plan-editor-screen" class="screen hidden">
+    <header>
+      <h1>Gerador de Plano Alimentar</h1>
+      <div style="display:flex; gap:10px;">
+        <button id="plan-editor-back" class="btn-secondary">Voltar</button>
+        <button id="plan-export-pdf" class="btn-primary">Exportar Plano (PDF)</button>
+        <button id="plan-export-xlsx" class="btn-primary">Exportar Plano (Excel)</button>
+      </div>
+    </header>
+    <main>
+      <div id="plan-editor-container" class="card" style="max-width:1000px;margin:16px auto;">
+        <form id="plan-editor-form">
+          <input type="hidden" id="plan-for-email">
+          <input type="hidden" id="plan-for-assessment-date">
+          <div class="input-group">
+            <label for="plan-breakfast">Café da Manhã (essencial)</label>
+            <textarea id="plan-breakfast" class="meuTextarea" rows="1" required></textarea>
+          </div>
+
+          <div class="input-group">
+            <label for="plan-morning-snack">Lanche da Manhã (opcional)</label>
+            <textarea id="plan-morning-snack" class="meuTextarea" rows="1"></textarea>
+          </div>
+
+          <div class="input-group">
+            <label for="plan-lunch">Almoço (essencial)</label>
+            <textarea id="plan-lunch" class="meuTextarea" rows="3"  required></textarea>
+          </div>
+
+          <div class="input-group">
+            <label for="plan-afternoon-snack">Lanche da Tarde (opcional)</label>
+            <textarea id="plan-afternoon-snack" class="meuTextarea" rows="2"></textarea>
+          </div>
+
+          <div class="input-group">
+            <label for="plan-dinner">Jantar (essencial)</label>
+            <textarea id="plan-dinner" class="meuTextarea" rows="3" required></textarea>
+          </div>
+
+          <div class="input-group">
+            <label for="plan-night-snack">Ceia / Lanche Noturno (opcional)</label>
+            <textarea id="plan-night-snack" class="meuTextarea" rows="2"></textarea>
+          </div>
+
+          <div id="extra-meals-container"></div>
+          <div style="display:flex;gap:10px;margin:12px 0;">
+            <button type="button" id="add-extra-meal" class="btn-secondary">+ Adicionar refeição extra</button>
+            <span style="align-self:center;font-size:.9rem;color:#666">Lembre-se: adicione opções/substituições e instruções (ex.: porções).</span>
+          </div>
+
+          <div class="input-group"><label for="plan-observations">Observações e opções de substituição</label><textarea id="plan-observations"  class="meuTextarea" rows="3"></textarea></div>
+
+          <button type="submit" class="btn-primary">Salvar Plano</button>
+        </form>
+      </div>
+    </main>
+  </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
