@@ -186,10 +186,28 @@ textarea:focus {
     box-shadow: 0 8px 30px rgba(0,0,0,0.1);
 }
 
+#register-screen .form-container {
+    width: 56%;
+    display: flex;
+}
+
 #register-form {
-    width: 55%;
+    margin: 10px 20px 20px;
+    width: 70%;
     display: flex;
     flex-direction: column;
+}
+
+.par {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    width: 100%;
+    align-items: center;
+}
+
+
+.par .input-group{
+    margin-right: 20px;
 }
 
 #register-form .form-link {
@@ -233,11 +251,10 @@ textarea:focus {
 }
 
 #register-screen h1 {
-    display: flex;
-    margin: 50px 12.5% ;
-    position: absolute;
+    display: flex; 
+    margin: 30px;
     font-size: 46px;
-    color: white;
+    color: #000;
 }
 
 #register-screen img {
@@ -246,17 +263,12 @@ textarea:focus {
     width: 36%;
 }
 
-.termos {
-    width: 100%;
-    display: flex;
-}
-
 #client-report-screen {
     padding: 20px;
 }
 
 .form-container p {
-    font-size: 14px;
+    font-size: 18px;
     font-weight: 500;
     margin-bottom: 10px;
 }
@@ -584,3 +596,98 @@ canvas {
   margin: 15px 0;
   font-weight: 600;
 }
+
+
+/*Administrador */
+
+#admin-user-list-container {
+    padding: 20px;
+
+
+}
+
+#admin-user-list-container .btn-export {
+    background-color: #28a745;
+    border: none;
+    border-radius: 15px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 16px;
+    padding: 8px 14px;
+    margin: 5px 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in;
+}
+
+#admin-user-list-container .btn-export:hover {
+    background-color: #218838;
+}
+
+#admin-user-list-container .btn-view {
+    background-color: #4e99ab;
+    border: none;
+    border-radius: 15px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 16px;
+    padding: 8px 14px;
+    margin: 5px 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in;
+}
+
+#admin-user-list-container .btn-view:hover {
+    background-color: #007bff;
+}
+
+#admin-user-list-container .btn-danger {
+    background-color: #ff0000;
+    border: none;
+    border-radius: 15px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 16px;
+    padding: 8px 14px;
+    margin: 5px 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in;
+}   
+
+#admin-user-list-container .btn-danger:hover {
+    background-color: #b70c0c;
+}
+    
+table {
+    width: 100%;
+    border-collapse: separate;
+}
+
+table th, table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+
+
+/*Nutricionista*/
+#client-summary p, #client-assessment-detail p, .list-item-info {
+    font-size: 18px;
+    margin: 10px;
+}
+
+#client-assessment-detail h3 {
+    margin: 20px 10px;
+}
+
+.btn-avaliation {
+    background-color: #4e99ab;
+    border-radius: 6px;
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    font-size: 16px;
+    padding: 10px 14px;
+
+}
+

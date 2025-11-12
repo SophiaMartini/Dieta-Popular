@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     plansDb = JSON.parse(localStorage.getItem('dietaPopularPlans')) || {};
     if (usersDb.length === 0) {
       usersDb.push({ name: 'Admin', email: 'admin@email.com', birthdate: '1990-01-01', address: 'N/A', password: 'AdminNexa', role: 'admin', createdAt: new Date().toISOString() });
-      usersDb.push({ name: 'Dr(a). Nutricionista', email: 'nutri@dieta.com', birthdate: '1992-05-10', address: 'N/A', password: 'NutriNexa', role: 'nutricionista', createdAt: new Date().toISOString() });
+      usersDb.push({ name: 'Dr(a). Nutricionista', email: 'nutricionista@email.com', birthdate: '1992-05-10', address: 'N/A', password: 'NutriNexa', role: 'nutricionista', createdAt: new Date().toISOString() });
       saveUsersDb();
     }
   };
@@ -142,8 +142,8 @@ document.addEventListener('DOMContentLoaded', () => {
       tr.innerHTML = `<td>${u.name}</td><td>${u.email}</td><td>${u.role}</td><td>${ lastArr !== '—' ? new Date(lastArr).toLocaleDateString('pt-BR') : '—' }</td>
         <td>
           <button class="btn-view" data-email="${u.email}">Ver</button>
+          <button class=" btn-export" data-email="${u.email}">Exportar</button>
           ${u.role!=='admin' ? `<button class="btn-danger btn-delete" data-email="${u.email}">Excluir</button>` : ''}
-          <button class="btn-secondary btn-export" data-email="${u.email}">Exportar</button>
         </td>`;
       tbody.appendChild(tr);
     });
@@ -265,13 +265,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const arrs = assessmentsDb[currentUser.email] || [];
     const submitBtn = document.getElementById('assessment-submit-btn'); 
     const errorEl = document.getElementById('assessment-error');
-
+//dias pra avalização
     if (arrs.length) {
         const lastDate = new Date(arrs[arrs.length-1].date);
-        const diffDays = Math.floor((Date.now() - lastDate.getTime()) / (0));
+        const diffDays = Math.floor((Date.now() - lastDate.getTime()) / (1000*60*60*24));
 
-        if (diffDays < 21) {
-            const remaining = 21 - diffDays;
+        if (diffDays < 0) {
+            const remaining = 0 - diffDays;
             errorEl.textContent = `Você deve aguardar ${remaining} dia(s) antes de realizar nova avaliação.`;
             if (submitBtn) {
                 submitBtn.disabled = true;
@@ -296,8 +296,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (arrs.length) {
       const lastDate = new Date(arrs[arrs.length-1].date);
       const diffDays = Math.floor((Date.now() - lastDate.getTime()) / (1000*60*60*24));
-      if (diffDays < 21) {
-        const remaining = 21 - diffDays;
+      if (diffDays < 0) {
+        const remaining = 0 - diffDays;
         document.getElementById('assessment-error').textContent = `Você deve aguardar ${remaining} dia(s) antes de realizar nova avaliação.`;
         return;
       }
@@ -456,8 +456,8 @@ document.addEventListener('DOMContentLoaded', () => {
           <canvas id="client-evolution-chart" style="max-width:100%;height:300px;"></canvas>
         </div>
         <div style="display:flex;gap:8px;margin-top:12px;">
-          <button id="btn-open-plan-for-assessment" class="btn-primary">Gerar Plano para ESTA Avaliação</button>
-          <button id="btn-export-assess-xlsx" class="btn-secondary">Exportar Avaliação (Excel)</button>
+          <button id="btn-open-plan-for-assessment" class="btn-avaliation">Gerar Plano para ESTA Avaliação</button>
+          <button id="btn-export-assess-xlsx" class="btn-avaliation">Exportar Avaliação (Excel)</button>
         </div>
         <div id="client-current-plan" style="margin-top:12px;"></div>
       </div>
