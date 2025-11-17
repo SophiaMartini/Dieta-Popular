@@ -68,10 +68,16 @@
             <label for="register-address">Endereço Completo:</label>
             <input type="text" id="register-address" placeholder="Rua, Número, Bairro, Cidade - Estado" required>
         </div>
+            
+            
+        <div class="termos">
+            <input type="checkbox" name="lgpd-consent" id="lgpd-consent"  required>
+            <label class="" for="lgpd-consent">
+                 Eu aceito os <a href="#" id="open_term_link">Termos e a Política de Privacidade</a>
+            </label>
+        </div>
+            
 
-        <input type="checkbox" id="lgpd-consent" required>
-        <label class=""> Eu aceito os <a href="#">Termos e a Política de Privacidade</a>.</label>
-        
         
         <button type="submit" class="btn-primary">Cadastrar</button>
         <p class="form-link">Já tem uma conta? <a href="#" id="show-login">Faça Login</a></p>
@@ -404,43 +410,44 @@
         <form id="plan-editor-form">
           <input type="hidden" id="plan-for-email">
           <input type="hidden" id="plan-for-assessment-date">
-          <div class="input-group">
-            <label for="plan-breakfast">Café da Manhã (essencial)</label>
+          <h2>Plano Alimentar</h2>
+          <h3>Lembre-se de adicionar alimentos como opções para substituição.</h3>
+          <div class="input-plan">
+            <label for="plan-breakfast">Café da Manhã (essencial):</label>
             <textarea id="plan-breakfast" class="meuTextarea" rows="1" required></textarea>
           </div>
 
-          <div class="input-group">
-            <label for="plan-morning-snack">Lanche da Manhã (opcional)</label>
+          <div class="input-plan">
+            <label for="plan-morning-snack">Lanche da Manhã (opcional):</label>
             <textarea id="plan-morning-snack" class="meuTextarea" rows="1"></textarea>
           </div>
 
-          <div class="input-group">
+          <div class="input-plan">
             <label for="plan-lunch">Almoço (essencial)</label>
             <textarea id="plan-lunch" class="meuTextarea" rows="3"  required></textarea>
           </div>
 
-          <div class="input-group">
+          <div class="input-plan">
             <label for="plan-afternoon-snack">Lanche da Tarde (opcional)</label>
             <textarea id="plan-afternoon-snack" class="meuTextarea" rows="2"></textarea>
           </div>
 
-          <div class="input-group">
-            <label for="plan-dinner">Jantar (essencial)</label>
+          <div class="input-plan">
+            <label for="plan-dinner">Jantar (essencial):</label>
             <textarea id="plan-dinner" class="meuTextarea" rows="3" required></textarea>
           </div>
 
-          <div class="input-group">
-            <label for="plan-night-snack">Ceia / Lanche Noturno (opcional)</label>
+          <div class="input-plan">
+            <label for="plan-night-snack">Ceia / Lanche Noturno (opcional):</label>
             <textarea id="plan-night-snack" class="meuTextarea" rows="2"></textarea>
           </div>
 
           <div id="extra-meals-container"></div>
           <div style="display:flex;gap:10px;margin:12px 0;">
             <button type="button" id="add-extra-meal" class="btn-secondary">+ Adicionar refeição extra</button>
-            <span style="align-self:center;font-size:.9rem;color:#666">Lembre-se: adicione opções/substituições e instruções (ex.: porções).</span>
           </div>
 
-          <div class="input-group"><label for="plan-observations">Observações e opções de substituição</label><textarea id="plan-observations"  class="meuTextarea" rows="3"></textarea></div>
+          <div class="input-plan"><label for="plan-observations">Observações e opções de substituição</label><textarea id="plan-observations"  class="meuTextarea" rows="3"></textarea></div>
 
           <button type="submit" class="btn-primary">Salvar Plano</button>
         </form>
@@ -448,6 +455,51 @@
     </main>
   </div>
 
+</div>
+
+<div id="modal-overlay">
+  <div id="modal-content">
+    <button id="modal-close-btn">&times;</button>
+    <h2>Termos de Uso e Política de Privacidade – Dieta Popular</h2>
+    
+    <p>Bem-vinda ao sistema Dieta Popular!</p>
+    <p>Ao acessar ou se cadastrar, você concorda com os termos abaixo. Caso não concorde, pedimos que não utilize o sistema.</p>
+    
+    <p><strong>1. Sobre o Sistema</strong></p>
+    <p>O Dieta Popular é uma plataforma de avaliação nutricional que coleta informações pessoais e de saúde para gerar relatórios e planos alimentares personalizados.</p>
+    
+    <p><strong>2. Dados Coletados</strong></p>
+    <p>Podem ser solicitados:<br>
+    Nome, e-mail, data de nascimento, endereço e senha;<br>
+    Informações nutricionais (peso, altura, hábitos alimentares, rotina, doenças, medicamentos, etc.);<br>
+    Dados de uso e acesso.</p>
+    
+    <p><strong>3. Uso das Informações</strong></p>
+    <p>Os dados são utilizados para:<br>
+    Criar seu perfil e plano alimentar;<br>
+    Melhorar o sistema e oferecer suporte;<br>
+    Cumprir obrigações legais.<br>
+    Não vendemos nem compartilhamos seus dados com terceiros sem consentimento.</p>
+    
+    <p><strong>4. Segurança e Armazenamento</strong></p>
+    <p>Adotamos medidas técnicas para proteger seus dados.<br>
+    Você deve manter sua senha em sigilo.<br>
+    Os dados são armazenados apenas pelo tempo necessário para as finalidades informadas.</p>
+    
+    <p><strong>5. Direitos do Usuário</strong></p>
+    <p>Você pode solicitar:<br>
+    Acesso, correção ou exclusão dos seus dados depois de 21 dias;<br>
+    Revogação do consentimento;<br>
+    Informações sobre o uso dos seus dados.<br>
+    Envie solicitações para: [seuemail@dominio.com]</p>
+    
+    <p><strong>6. Responsabilidades</strong></p>
+    <p>O sistema fornece orientações alimentares de forma responsável, baseadas em informações confiáveis e revisadas.<br>
+    Nos responsabilizamos pelas orientações disponibilizadas dentro da plataforma, garantindo que sigam padrões de qualidade e boas práticas na área da alimentação.</p>
+    
+    <p><strong>7. Alterações</strong></p>
+    <p>Podemos atualizar este documento a qualquer momento. O uso contínuo após mudanças indica concordância com a nova versão.</p>
+  </div>
 </div>
 
 <script src="script.js"></script>

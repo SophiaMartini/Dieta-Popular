@@ -1,21 +1,173 @@
 
-function exportElementToPDF(element, filename = 'export.pdf') {
+
+// Função melhorada para exportar PDF profissional
+function exportElementToPDF(element, filename = 'export.pdf', metadata = {}) {
   if (!element) return alert('Elemento para exportar não encontrado.');
+  
   try {
-    const doc = new window.jspdf.jsPDF({ unit: 'pt', format: 'a4' });
-    doc.html(element, {
-      callback: function (doc) { doc.save(filename); },
-      x: 20, y: 20, html2canvas: { scale: 1.0 }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
     });
-  } catch (err) {
-    // fallback textual
-    const text = element.innerText || element.textContent || 'Sem conteúdo';
-    const doc = new jsPDF();
-    const split = doc.splitTextToSize(text, 500);
-    doc.text(split, 15, 20);
+
+    const margin = 20;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const contentWidth = pageWidth - (margin * 2);
+    let yPosition = margin;
+
+    // CABEÇALHO PROFISSIONAL
+    const addHeader = () => {
+      // Logo/Nome da empresa
+      doc.setFillColor(40, 167, 69);
+      doc.rect(0, 0, pageWidth, 35, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(24);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Dieta Popular', margin, 15);
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Sistema de Avaliação Nutricional', margin, 22);
+      doc.text('www.dietapopular.com.br', margin, 28);
+      
+      yPosition = 45;
+    };
+
+    // RODAPÉ PROFISSIONAL
+    const addFooter = (pageNum) => {
+      const footerY = pageHeight - 15;
+      
+      doc.setDrawColor(40, 167, 69);
+      doc.setLineWidth(0.5);
+      doc.line(margin, footerY - 5, pageWidth - margin, footerY - 5);
+      
+      doc.setFontSize(8);
+      doc.setTextColor(100, 100, 100);
+      doc.setFont('helvetica', 'normal');
+      
+      // Informações do nutricionista
+      const nutricionistaInfo = metadata.nutricionista || 'Dr(a). Nutricionista';
+      const crn = metadata.crn || 'CRN: 12345/P';
+      doc.text(nutricionistaInfo + ' - ' + crn, margin, footerY);
+      
+      // Data de emissão
+      const dataEmissao = new Date().toLocaleDateString('pt-BR');
+      doc.text('Emitido em: ' + dataEmissao, pageWidth / 2, footerY, { align: 'center' });
+      
+      // Número da página
+      doc.text('Página ' + pageNum, pageWidth - margin, footerY, { align: 'right' });
+    };
+
+    // Função para adicionar nova página com header/footer
+    let pageNum = 1;
+    const addNewPage = () => {
+      pageNum++;
+      doc.addPage();
+      addHeader();
+      addFooter(pageNum);
+    };
+
+    // Função para adicionar texto com quebra de linha
+    const addText = (text, fontSize = 11, isBold = false, color = [0, 0, 0]) => {
+      doc.setFontSize(fontSize);
+      doc.setFont('helvetica', isBold ? 'bold' : 'normal');
+      doc.setTextColor(color[0], color[1], color[2]);
+      
+      const lines = doc.splitTextToSize(text, contentWidth);
+      
+      lines.forEach(line => {
+        if (yPosition > pageHeight - 25) {
+          addNewPage();
+        }
+        doc.text(line, margin, yPosition);
+        yPosition += fontSize * 0.5;
+      });
+      
+      yPosition += 2;
+    };
+
+    // Adicionar título do documento
+    const addTitle = (text) => {
+      if (yPosition > pageHeight - 40) {
+        addNewPage();
+      }
+      doc.setFillColor(240, 240, 240);
+      doc.rect(margin - 5, yPosition - 5, contentWidth + 10, 12, 'F');
+      addText(text, 16, true, [40, 167, 69]);
+      yPosition += 3;
+    };
+
+    // Adicionar seção
+    const addSection = (title, content) => {
+      if (yPosition > pageHeight - 35) {
+        addNewPage();
+      }
+      addText(title, 13, true, [40, 167, 69]);
+      addText(content, 11, false);
+      yPosition += 3;
+    };
+
+    // Adicionar header e footer da primeira página
+    addHeader();
+    addFooter(pageNum);
+
+    // INFORMAÇÕES DO CLIENTE (se disponível)
+    if (metadata.clienteNome) {
+      addTitle('Informações do Cliente');
+      addSection('Nome:', metadata.clienteNome);
+      if (metadata.clienteEmail) addSection('Email:', metadata.clienteEmail);
+      if (metadata.clienteIdade) addSection('Idade:', metadata.clienteIdade + ' anos');
+      yPosition += 5;
+    }
+
+    // Processar conteúdo do elemento
+    const title = element.querySelector('h1, h2');
+    if (title && !metadata.clienteNome) {
+      addTitle(title.textContent);
+    }
+
+    const cards = element.querySelectorAll('.card');
+    cards.forEach((card, index) => {
+      const cardTitle = card.querySelector('h2, h3');
+      if (cardTitle) {
+        addTitle(cardTitle.textContent);
+      }
+
+      const paragraphs = card.querySelectorAll('p');
+      paragraphs.forEach(p => {
+        let text = p.textContent.trim();
+        if (text && !text.includes('undefined')) {
+          addText(text, 11);
+        }
+      });
+
+      const lists = card.querySelectorAll('ul li');
+      lists.forEach(li => {
+        addText('• ' + li.textContent.trim(), 11);
+      });
+
+      if (index < cards.length - 1) {
+        yPosition += 5;
+      }
+    });
+
+    // Se não houver cards, processar texto direto
+    if (cards.length === 0) {
+      const text = element.innerText || element.textContent || 'Sem conteúdo';
+      addText(text, 11);
+    }
+
     doc.save(filename);
+  } catch (err) {
+    console.error('Erro ao gerar PDF:', err);
+    alert('Erro ao gerar PDF: ' + err.message);
   }
 }
+
 function exportObjectToExcel(objOrRows, filename = 'dados.xlsx', sheetName = 'Dados') {
   try {
     let ws;
@@ -77,6 +229,244 @@ document.addEventListener('DOMContentLoaded', () => {
     if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
     return age;
   };
+
+  function calculateRadarScores(formInputs) {
+  const scores = {
+    sono: 0,
+    atividadeFisica: 0,
+    alimentacao: 0,
+    hidratacao: 0,
+    saudeGeral: 0,
+    bemEstar: 0
+  };
+
+  // 1. QUALIDADE DO SONO (0-100)
+  let sleepScore = 0;
+  switch(formInputs.sleep_hours) {
+    case '7 a 8h': sleepScore += 50; break;
+    case 'Mais de 8h': sleepScore += 40; break;
+    case '5 a 6h': sleepScore += 25; break;
+    case 'Menos de 5h': sleepScore += 10; break;
+  }
+  switch(formInputs.sleep_quality) {
+    case 'Boa (revigorante)': sleepScore += 50; break;
+    case 'Regular': sleepScore += 25; break;
+    case 'Ruim (acordo cansado)': sleepScore += 10; break;
+  }
+  scores.sono = sleepScore;
+
+  // 2. ATIVIDADE FÍSICA (0-100)
+  let activityScore = 0;
+  switch(formInputs.physical_activity_freq) {
+    case '5 ou mais vezes/semana': activityScore += 50; break;
+    case '3 a 4 vezes/semana': activityScore += 40; break;
+    case '1 a 2 vezes/semana': activityScore += 20; break;
+    case 'Sedentário': activityScore += 0; break;
+  }
+  switch(formInputs.physical_activity_type) {
+    case 'Intensa (Crossfit, HIIT)': activityScore += 50; break;
+    case 'Moderada (musculação, corrida leve)': activityScore += 40; break;
+    case 'Leve (caminhada, yoga)': activityScore += 25; break;
+    case 'Nenhuma': activityScore += 0; break;
+  }
+  scores.atividadeFisica = activityScore;
+
+  // 3. ALIMENTAÇÃO SAUDÁVEL (0-100)
+  let foodScore = 0;
+  // Frutas e vegetais (positivo)
+  switch(formInputs.fruits_vegetables) {
+    case 'Diariamente, em boa quantidade': foodScore += 35; break;
+    case 'Diariamente, em pouca quantidade': foodScore += 25; break;
+    case '1 a 3 vezes/semana': foodScore += 15; break;
+    case 'Nunca ou raramente': foodScore += 5; break;
+  }
+  // Processados (negativo)
+  switch(formInputs.processed_food) {
+    case 'Raramente ou nunca': foodScore += 35; break;
+    case '1 a 2 vezes/semana': foodScore += 25; break;
+    case '3 a 5 vezes/semana': foodScore += 10; break;
+    case 'Diariamente': foodScore += 0; break;
+  }
+  // Doces (negativo)
+  switch(formInputs.sweets) {
+    case 'Raramente ou nunca': foodScore += 30; break;
+    case '1 a 2 vezes/semana': foodScore += 20; break;
+    case '3 a 5 vezes/semana': foodScore += 10; break;
+    case 'Diariamente': foodScore += 0; break;
+  }
+  scores.alimentacao = foodScore;
+
+  // 4. HIDRATAÇÃO (0-100)
+  switch(formInputs.water_intake) {
+    case '8 ou mais copos (2L+)': scores.hidratacao = 100; break;
+    case '4 a 7 copos (1-1.5L)': scores.hidratacao = 65; break;
+    case 'Menos de 4 copos': scores.hidratacao = 30; break;
+  }
+
+  // 5. SAÚDE GERAL (0-100)
+  let healthScore = 100;
+  // Reduz pontos por sintomas
+  if (formInputs.symptoms) {
+    const symptomCount = formInputs.symptoms.filter(s => s !== 'Nenhum').length;
+    healthScore -= (symptomCount * 15);
+  }
+  // Reduz pontos por doenças
+  if (formInputs.diseases) {
+    const diseaseCount = formInputs.diseases.filter(d => d !== 'Nenhuma').length;
+    healthScore -= (diseaseCount * 20);
+  }
+  scores.saudeGeral = Math.max(0, healthScore);
+
+  // 6. BEM-ESTAR MENTAL (0-100)
+  let mentalScore = 100;
+  switch(formInputs.stress_level) {
+    case 'Alto e constante': mentalScore = 30; break;
+    case 'Moderado': mentalScore = 60; break;
+    case 'Baixo': mentalScore = 95; break;
+  }
+  // Ajusta com base na qualidade do sono
+  if (formInputs.sleep_quality === 'Ruim (acordo cansado)') {
+    mentalScore -= 15;
+  }
+  scores.bemEstar = Math.max(0, mentalScore);
+
+  return scores;
+}
+
+function createRadarChart(canvasId, scores) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+
+  // Destruir gráfico anterior se existir
+  if (chartInstances[canvasId]) {
+    chartInstances[canvasId].destroy();
+    delete chartInstances[canvasId];
+  }
+
+  chartInstances[canvasId] = new Chart(canvas.getContext('2d'), {
+    type: 'radar',
+    data: {
+      labels: [
+        'Qualidade do Sono',
+        'Atividade Física',
+        'Alimentação Saudável',
+        'Hidratação',
+        'Saúde Geral',
+        'Bem-estar Mental'
+      ],
+      datasets: [{
+        label: 'Seu Perfil Nutricional',
+        data: [
+          scores.sono,
+          scores.atividadeFisica,
+          scores.alimentacao,
+          scores.hidratacao,
+          scores.saudeGeral,
+          scores.bemEstar
+        ],
+        backgroundColor: 'rgba(40, 167, 69, 0.2)',
+        borderColor: 'rgba(40, 167, 69, 1)',
+        borderWidth: 2,
+        pointBackgroundColor: 'rgba(40, 167, 69, 1)',
+        pointBorderColor: '#fff',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: 'rgba(40, 167, 69, 1)'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        r: {
+          beginAtZero: true,
+          max: 100,
+          ticks: {
+            stepSize: 20
+          },
+          pointLabels: {
+            font: {
+              size: 12
+            }
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top'
+        }
+      }
+    }
+  });
+}
+
+
+function createRadarChart(canvasId, scores) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+
+  // Destruir gráfico anterior se existir
+  if (chartInstances[canvasId]) {
+    chartInstances[canvasId].destroy();
+    delete chartInstances[canvasId];
+  }
+
+  chartInstances[canvasId] = new Chart(canvas.getContext('2d'), {
+    type: 'radar',
+    data: {
+      labels: [
+        'Qualidade do Sono',
+        'Atividade Física',
+        'Alimentação Saudável',
+        'Hidratação',
+        'Saúde Geral',
+        'Bem-estar Mental'
+      ],
+      datasets: [{
+        label: 'Seu Perfil Nutricional',
+        data: [
+          scores.sono,
+          scores.atividadeFisica,
+          scores.alimentacao,
+          scores.hidratacao,
+          scores.saudeGeral,
+          scores.bemEstar
+        ],
+        backgroundColor: 'rgba(40, 167, 69, 0.2)',
+        borderColor: 'rgba(40, 167, 69, 1)',
+        borderWidth: 2,
+        pointBackgroundColor: 'rgba(40, 167, 69, 1)',
+        pointBorderColor: '#fff',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: 'rgba(40, 167, 69, 1)'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        r: {
+          beginAtZero: true,
+          max: 100,
+          ticks: {
+            stepSize: 20
+          },
+          pointLabels: {
+            font: {
+              size: 12
+            }
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top'
+        }
+      }
+    }
+  });
+}
 
 
   const handleLogin = (e) => {
@@ -250,15 +640,7 @@ document.addEventListener('DOMContentLoaded', () => {
     container.innerHTML = `<div class="dashboard-grid">${content}</div>`;
     if (document.getElementById('start-assessment-btn-welcome')) document.getElementById('start-assessment-btn-welcome').addEventListener('click', () => showScreen('assessment'));
     if (document.getElementById('start-new-assessment-btn')) document.getElementById('start-new-assessment-btn').addEventListener('click', () => showScreen('assessment'));
-    if (document.getElementById('view-full-results-btn')) document.getElementById('view-full-results-btn').addEventListener('click', () => {
-      // render results-screen similar to client report but simpler
-      const arrs = assessmentsDb[currentUser.email] || [];
-      const latest = arrs.length ? arrs[arrs.length-1] : null;
-      if (!latest) { alert('Nenhuma avaliação disponível.'); return; }
-      document.getElementById('results-content').innerHTML = renderResultsContent(latest);
-      renderChartForClient(currentUser.email); // show evolution
-      showScreen('results');
-    });
+    view-full-results-btn
   };
 
   const checkAssessmentLock = () => {
@@ -373,11 +755,58 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   const renderResultsContent = (assessment) => {
-    return `<div class="card"><h2>IMC</h2><p class="result-value">${assessment.imc}</p><p class="result-classification">${assessment.classification}</p></div>
-      <div class="card"><h2>Alertas e Orientações</h2><ul id="alerts-list">${assessment.alerts.length ? assessment.alerts.map(a=>`<li>${a}</li>`).join('') : '<li>Nenhum alerta crítico gerado.</li>'}</ul></div>
-      <div class="card"><h2>Perfil</h2><p>${assessment.profile}</p></div>
-      <div class="card"><h2>Respostas</h2><p>Veja abaixo os campos reportados na avaliação.</p></div>`;
-  };
+  // Calcular scores do radar
+  const radarScores = calculateRadarScores(assessment.formInputs);
+  
+  return `
+    <div class="card">
+      <h2>IMC</h2>
+      <p class="result-value">${assessment.imc}</p>
+      <p class="result-classification">${assessment.classification}</p>
+    </div>
+    
+    <div class="card">
+      <h2>Seu Perfil Nutricional</h2>
+      <canvas id="radar-chart-results" style="max-width:600px;height:400px;margin:20px auto;"></canvas>
+    </div>
+    
+    <div class="card">
+      <h2>Pontuações Detalhadas</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-top:15px;">
+        <div style="padding:15px;background:#f8f9fa;border-radius:8px;">
+          <strong>Sono:</strong> ${radarScores.sono}/100
+        </div>
+        <div style="padding:15px;background:#f8f9fa;border-radius:8px;">
+          <strong>Atividade Física:</strong> ${radarScores.atividadeFisica}/100
+        </div>
+        <div style="padding:15px;background:#f8f9fa;border-radius:8px;">
+          <strong>Alimentação:</strong> ${radarScores.alimentacao}/100
+        </div>
+        <div style="padding:15px;background:#f8f9fa;border-radius:8px;">
+          <strong>Hidratação:</strong> ${radarScores.hidratacao}/100
+        </div>
+        <div style="padding:15px;background:#f8f9fa;border-radius:8px;">
+          <strong>Saúde Geral:</strong> ${radarScores.saudeGeral}/100
+        </div>
+        <div style="padding:15px;background:#f8f9fa;border-radius:8px;">
+          <strong>Bem-estar:</strong> ${radarScores.bemEstar}/100
+        </div>
+      </div>
+    </div>
+    
+    <div class="card">
+      <h2>Alertas e Orientações</h2>
+      <ul id="alerts-list">
+        ${assessment.alerts.length ? assessment.alerts.map(a=>`<li>${a}</li>`).join('') : '<li>Nenhum alerta crítico gerado.</li>'}
+      </ul>
+    </div>
+    
+    <div class="card">
+      <h2>Perfil</h2>
+      <p>${assessment.profile}</p>
+    </div>
+  `;
+};
 
   const showClientReportScreen = (client) => {
     const summaryEl = document.getElementById('client-summary');
@@ -478,19 +907,38 @@ document.addEventListener('DOMContentLoaded', () => {
         ${plan.extraMeals && plan.extraMeals.length ? plan.extraMeals.map(m=>`<p><strong>${m.title}:</strong> ${m.text}</p>`).join('') : ''}
         ${plan.observations ? `<p><strong>Observações:</strong> ${plan.observations}</p>` : ''}
         <div style="margin-top:8px;"><button id="btn-open-plan-editor-existing" class="btn-secondary">Editar Plano</button>
-        <button id="btn-export-plan-xlsx" class="btn-primary">Exportar Plano (Excel)</button>
-        <button id="btn-export-plan-pdf" class="btn-primary">Exportar Plano (PDF)</button></div></div>`;
+        <button id="btn-export-plan-xlsx" class="btn-avaliation">Exportar Plano (Excel)</button>
+        <button id="btn-export-plan-pdf" class="btn-avaliation">Exportar Plano (PDF)</button></div></div>`;
       // attach export/edit handlers after DOM insertion
       document.getElementById('btn-open-plan-editor-existing').onclick = () => openPlanEditorFor(client.email, assessment.id);
       document.getElementById('btn-export-plan-xlsx').onclick = () => {
         exportPlanToExcel(planKey, `${client.name.replace(/\s+/g,'_')}_plano_${assessment.date.slice(0,10)}.xlsx`);
       };
       document.getElementById('btn-export-plan-pdf').onclick = () => {
-        const wrap = document.createElement('div'); wrap.style.padding='10px'; wrap.innerHTML = `<h2>Plano - ${client.name}</h2>`;
-        wrap.innerHTML += `<p><strong>Café:</strong> ${plan.breakfast}</p><p><strong>Almoço:</strong> ${plan.lunch}</p><p><strong>Jantar:</strong> ${plan.dinner}</p>`;
+        const wrap = document.createElement('div'); wrap.style.padding='20px'; wrap.innerHTML = `
+        <h2>Plano - ${client.name}</h2>`;
+        wrap.innerHTML += `
+        <p><strong>Café:</strong> ${plan.breakfast}</p>
+        <p><strong>Almoço:</strong> ${plan.lunch}</p>
+        <p><strong>Jantar:</strong> ${plan.dinner}</p>`;
         document.body.appendChild(wrap); exportElementToPDF(wrap, `${client.name.replace(/\s+/g,'_')}_plano_${assessment.date.slice(0,10)}.pdf`); document.body.removeChild(wrap);
       };
     }
+
+
+const radarScores = calculateRadarScores(assessment.formInputs);
+const radarContainer = document.createElement('div');
+radarContainer.className = 'card';
+radarContainer.style.marginTop = '20px';
+radarContainer.innerHTML = `
+  <h3>Perfil Nutricional do Cliente</h3>
+  <canvas id="radar-chart-client-detail" style="max-width:600px;height:400px;margin:20px auto;"></canvas>
+`;
+detailEl.querySelector('.card').appendChild(radarContainer);
+
+setTimeout(() => {
+  createRadarChart('radar-chart-client-detail', radarScores);
+}, 100);
 
     // btn open plan
     document.getElementById('btn-open-plan-for-assessment').onclick = () => openPlanEditorFor(client.email, assessment.id);
@@ -582,8 +1030,8 @@ document.addEventListener('DOMContentLoaded', () => {
     extraContainer.innerHTML = '';
     (plan.extraMeals || []).forEach((m, idx) => {
       const el = document.createElement('div');
-      el.className = 'input-group';
-      el.innerHTML = `<label>Ref: <input class="extra-title" data-idx="${idx}" value="${m.title}"></label>
+      el.className = 'input-plan';
+      el.innerHTML = `<label style:"margin-bottom: 10px;">Ref: <input class="extra-title" data-idx="${idx}" value="${m.title}"></label>
                       <textarea class="extra-text" data-idx="${idx}" rows="2">${m.text}</textarea>
                       <button type="button" class="btn-danger btn-remove-extra" data-idx="${idx}">Remover</button>`;
       extraContainer.appendChild(el);
@@ -593,8 +1041,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('add-extra-meal').onclick = () => {
       const idx = extraContainer.children.length;
       const el = document.createElement('div');
-      el.className = 'input-group';
-      el.innerHTML = `<label>Refeição extra:</label><input class="extra-title" data-idx="${idx}" placeholder="Título (ex: Pré-treino)"><textarea class="extra-text" data-idx="${idx}" rows="2" placeholder="Descrição / opções"></textarea><button type="button" class="btn-danger btn-remove-extra" data-idx="${idx}">Remover</button>`;
+      el.className = 'input-plan';
+      el.innerHTML = `<label>Refeição extra:</label><br><input  style="margin-bottom:20px;  class="extra-title" data-idx="${idx}" placeholder="Título (ex: Pré-treino)"><textarea class="extra-text" data-idx="${idx}" rows="2" placeholder="Descrição / opções"></textarea><button type="button" class="btn-danger btn-remove-extra" data-idx="${idx}">Remover</button>`;
       extraContainer.appendChild(el);
       // attach remove on the new node
       el.querySelector('.btn-remove-extra').onclick = (ev) => { ev.target.parentElement.remove(); };
@@ -695,6 +1143,34 @@ document.addEventListener('DOMContentLoaded', () => {
     // small safety: clear assessment-error on input
     const assessmentFormEl = document.getElementById('assessment-form');
     if (assessmentFormEl) assessmentFormEl.addEventListener('input', ()=>{ const el = document.getElementById('assessment-error'); if (el) el.textContent=''; });
+    
+    const openTermsLink = document.getElementById('open_term_link'); // Confirme que o ID está certo
+    const modalOverlay = document.getElementById('modal-overlay');
+    const modalCloseBtn = document.getElementById('modal-close-btn');
+
+    if (openTermsLink && modalOverlay) {
+      openTermsLink.addEventListener('click', (e) => {
+        e.preventDefault(); // Impede o link de pular a página
+        modalOverlay.classList.add('show');
+      });
+    }
+
+    if (modalCloseBtn && modalOverlay) {
+      modalCloseBtn.addEventListener('click', () => {
+        modalOverlay.classList.remove('show');
+      });
+    }
+
+    if (modalOverlay) {
+      modalOverlay.addEventListener('click', (e) => {
+        // Fecha o modal apenas se o clique for no fundo (overlay)
+        if (e.target === modalOverlay) {
+          modalOverlay.classList.remove('show');
+        }
+      });
+    }
+    // --- Fim da ló
+
   };
 
   init();
